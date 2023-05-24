@@ -1,8 +1,38 @@
-const useGooglePlaceAutoComplete = () => {
+import React, { useEffect, useRef,useState } from "react";
+const useGooglePlaceAutoComplete = (key) => {
+    const [scriptLoaded, setScriptLoaded] = useState(false);
+
+    const scriptRef = useRef(null);
+
+    useEffect(() => {
+        if (!scriptLoaded) {
+        // Cargar el script solo si no se ha cargado previamente
+        const script = document.createElement("script");
+        script.src =
+            "https://maps.googleapis.com/maps/api/js?key=" + key + "&libraries=places";
+        script.async = true;
+
+        script.onload = () => {
+            setScriptLoaded(true);
+        };
+
+        scriptRef.current = script;
+        document.body.appendChild(script);
+        }
+
+        return () => {
+        // Eliminar el script cuando el componente se desmonte
+        if (scriptRef.current) {
+            document.body.removeChild(scriptRef.current);
+            scriptRef.current = null;
+        }
+        };
+    }, [scriptLoaded]);
 
     const initAutoComplete = async (input, callback) => {
-        let autoComplete =
-            new window.google.maps.places.Autocomplete(input,
+        let autoComplete =null;
+        if (scriptLoaded) {
+            autoComplete = new window.google.maps.places.Autocomplete(input,
                 {
                     // limit to North America for now
                     componentRestrictions: { country: ["us", "ca"] },
@@ -10,8 +40,8 @@ const useGooglePlaceAutoComplete = () => {
                     types: ["address"]
                 }
             );
-        autoComplete.addListener("place_changed", callback);
-
+            autoComplete.addListener("place_changed", callback);
+        }
         return autoComplete;
 
     };
@@ -74,7 +104,8 @@ const useGooglePlaceAutoComplete = () => {
 
     return {
         initAutoComplete,
-        getFullAddress
+        getFullAddress,
+        scriptLoaded
     };
 
 };

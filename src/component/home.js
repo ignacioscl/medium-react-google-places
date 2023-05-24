@@ -7,7 +7,7 @@ import useGooglePlaceAutoComplete from "../service/google_place_autocomplete";
 function Home() {
 
     const address1Ref = useRef();
-    const googleAutoCompleteSvc = useGooglePlaceAutoComplete();
+    const googleAutoCompleteSvc = useGooglePlaceAutoComplete('[YOUR_GOOGLE_KEY]');
     let autoComplete = "";
 
     const { handleSubmit, register, setFocus, setValue, formState: { errors } } = useForm({});
@@ -25,15 +25,18 @@ function Home() {
     const onSubmit = () => {
         console.log("Success!");
     };
-
+    
     useEffect(() => {
         async function loadGoogleMaps() {
             // initialize the Google Place Autocomplete widget and bind it to an input element.
             // eslint-disable-next-line
             autoComplete = await googleAutoCompleteSvc.initAutoComplete(address1Ref.current, handleAddressSelect);
         }
-        loadGoogleMaps();
-    }, []);
+        if (googleAutoCompleteSvc.scriptLoaded) {
+            loadGoogleMaps();
+        }
+        return undefined;
+    }, [googleAutoCompleteSvc.scriptLoaded]);
 
     return (
         <div className="container">
